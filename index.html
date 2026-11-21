@@ -1,0 +1,1445 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Pineapple Empire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+/* ---- tokens ----
+   layout: three fixed columns over a full-bleed sunburst background —
+   left clicker panel, middle header + plantation yard, 300px store on the right.
+*/
+:root{
+  /* gold bevel frame, lit from the top-left */
+  --gold-tl:#ece2b6;
+  --gold-tr:#875526;
+  --gold-br:#733726;
+  --gold-bl:#dfbc9a;
+  --frame-fill:#6a4323;
+  --frame-fill-lit:#9a6833;
+
+  --panel:rgba(0,0,0,0.55);
+  --panel-deep:rgba(0,0,0,0.72);
+  --band:rgba(0,0,0,0.42);
+  --row-a:rgba(0,0,0,0.46);
+  --row-b:rgba(0,0,0,0.34);
+
+  --text:#ffffff;
+  --text-dim:#cccccc;
+  --label:#f6dab8;
+  --label-outline:#360e00;
+  --green:#66ff66;
+  --red:#ff6666;
+  --juice:#ffc83d;
+
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:#1a0f05 url("/_blob/ab63a73dc8ae2e764707fd0f8365385b") center center / cover fixed no-repeat;
+  color:var(--text);
+  font:13px Tahoma, Verdana, Arial, sans-serif;
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+}
+.serif{font-family:'Merriweather', Georgia, serif;}
+
+.frame{
+  border-style:solid;
+  border-width:3px;
+  border-color:var(--gold-tl) var(--gold-tr) var(--gold-br) var(--gold-bl);
+  background:var(--frame-fill);
+}
+
+/* ---- shell ---- */
+#shell{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  padding-block:8px;
+  max-width:1400px;
+  margin:0 auto;
+}
+#topbar{
+  height:32px;
+  flex:0 0 32px;
+  background:rgba(0,0,0,0.78);
+  border:2px solid rgba(0,0,0,0.5);
+  border-radius:6px 6px 0 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 12px;
+  color:var(--text-dim);
+  gap:10px;
+}
+#topbar .brand{
+  font-family:'Merriweather',Georgia,serif;
+  font-weight:900;
+  font-size:14px;
+  color:var(--label);
+  text-shadow:1px 1px 0 var(--label-outline), 0 0 8px #000;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#topbar .links{display:flex;gap:14px;flex-shrink:0;}
+#topbar .links button{
+  background:none;border:none;padding:0;cursor:pointer;
+  color:#999;font:inherit;font-weight:700;
+}
+#topbar .links button:hover{color:#fff;text-decoration:underline;}
+
+#game{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns: minmax(260px, 30%) 1fr 300px;
+  border:2px solid rgba(0,0,0,0.5);
+  border-top:none;
+  border-radius:0 0 6px 6px;
+  overflow:hidden;
+}
+
+/* ---- LEFT ---- */
+#left{
+  position:relative;
+  background:var(--panel);
+  display:flex;flex-direction:column;align-items:center;
+  border-right:3px solid rgba(0,0,0,0.6);
+  overflow:hidden;
+}
+#counterBand{
+  width:100%;margin-top:6%;
+  background:var(--band);
+  padding:8px 6px;text-align:center;flex-shrink:0;
+}
+#bigCount{
+  font-family:'Merriweather',Georgia,serif;font-weight:900;
+  font-size:26px;line-height:1.15;color:#fff;
+  text-shadow:0 0 8px #000, 0 0 3px #000, 0 2px 0 rgba(0,0,0,.8);
+  display:block;word-break:break-word;
+}
+#perSecond{
+  display:block;margin-top:4px;font-size:12px;color:var(--text-dim);
+  text-shadow:0 0 5px #000;
+}
+#frenzyTag{
+  display:none;margin-top:5px;font-weight:700;font-size:12px;
+  color:#ffdf5c;text-shadow:0 0 6px #000;
+}
+#frenzyTag.on{display:block;}
+
+#clickWrap{
+  flex:1 1 auto;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  min-height:0;position:relative;
+}
+#clickZone{
+  position:relative;width:min(256px, 66%);aspect-ratio:1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;touch-action:manipulation;
+}
+#pineShine{
+  position:absolute;inset:-40%;
+  background:url("/_blob/3723d23aec801a71192b19bfe6554a07") center / contain no-repeat;
+  opacity:.8;pointer-events:none;mix-blend-mode:screen;
+  animation:shineSpin 14s linear infinite, shinePulse 2.6s ease-in-out infinite;
+}
+@keyframes shineSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes shinePulse{0%,100%{opacity:.55;}50%{opacity:.95;}}
+#pineImg{
+  position:relative;width:100%;height:100%;object-fit:contain;display:block;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.6));transition:transform .07s ease;
+}
+#clickZone:active #pineImg{transform:scale(.93);}
+
+.float-pop{
+  position:absolute;font-family:'Merriweather',Georgia,serif;font-weight:900;
+  font-size:19px;color:#fff;text-shadow:0 0 6px #000, 0 2px 0 #000;
+  pointer-events:none;z-index:6;white-space:nowrap;
+  animation:floatUp 1s ease-out forwards;
+}
+@keyframes floatUp{
+  0%{opacity:1;transform:translate(-50%,0) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-90px) scale(1.1);}
+}
+
+/* juice meter, fills as achievements unlock */
+#juiceWrap{
+  flex-shrink:0;width:100%;
+  background:var(--band);
+  padding:6px 10px 8px;
+  text-align:center;
+}
+#juiceLabel{font-size:11px;color:#e7d6b4;text-shadow:0 0 4px #000;}
+#juiceBar{
+  margin-top:4px;height:9px;width:100%;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(0,0,0,.6);
+  overflow:hidden;
+}
+#juiceFill{
+  height:100%;width:0%;
+  background:linear-gradient(180deg,#ffe489,var(--juice));
+  transition:width .4s ease;
+}
+
+.golden{
+  position:absolute;width:70px;height:70px;cursor:pointer;z-index:12;
+  animation:drift 6s ease-in-out infinite;
+}
+.golden .g-shine{
+  position:absolute;inset:-70%;
+  background:url("/_blob/3723d23aec801a71192b19bfe6554a07") center / contain no-repeat;
+  mix-blend-mode:screen;pointer-events:none;
+  animation:shineSpin 5s linear infinite, shinePulse 1.3s ease-in-out infinite;
+}
+.golden img{position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 10px #ffdf5c);}
+@keyframes drift{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+
+/* ---- MIDDLE ---- */
+#mid{
+  background:rgba(0,0,0,0.38);
+  display:flex;flex-direction:column;min-width:0;
+  border-right:3px solid rgba(0,0,0,0.6);
+}
+#midHead{
+  flex:0 0 64px;height:64px;
+  background:linear-gradient(180deg, rgba(0,0,0,.62), rgba(0,0,0,.35));
+  display:grid;grid-template-columns:104px 1fr 104px;align-items:center;
+  border-bottom:2px solid rgba(0,0,0,.5);padding:4px;gap:4px;
+}
+.corner-pair{display:flex;flex-direction:column;gap:4px;}
+.corner-btn{
+  height:24px;font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:11px;
+  color:#ccc;background:rgba(0,0,0,.45);border:2px solid rgba(0,0,0,.6);
+  border-radius:4px;cursor:pointer;text-shadow:0 0 4px #000;
+}
+.corner-btn:hover{color:#fff;background:rgba(80,50,20,.75);border-color:var(--gold-bl);}
+#quote{
+  text-align:center;font-family:Georgia, serif;font-style:italic;font-size:14px;
+  color:#e8dcc6;text-shadow:0 0 6px #000;padding:0 6px;overflow:hidden;min-width:0;
+}
+#yard{
+  flex:1 1 auto;overflow-y:auto;padding:8px;
+  display:flex;flex-direction:column;gap:8px;min-height:0;
+}
+#yard::-webkit-scrollbar{width:9px;}
+#yard::-webkit-scrollbar-thumb{background:rgba(0,0,0,.6);border-radius:6px;}
+#yard::-webkit-scrollbar-track{background:rgba(0,0,0,.2);}
+.yard-row{
+  background:rgba(0,0,0,.52);border:2px solid rgba(0,0,0,.45);
+  border-radius:4px;padding:6px 8px;min-height:60px;
+}
+.yard-row .yr-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:12px;
+  color:var(--label);text-shadow:1px 1px 0 var(--label-outline);margin-bottom:4px;
+}
+.yard-row .yr-rate{font-family:Tahoma,sans-serif;font-weight:400;font-size:11px;color:#a89a84;text-shadow:none;}
+.yard-row .yr-sprites{display:flex;flex-wrap:wrap;gap:1px;font-size:17px;line-height:1.1;}
+.yard-row .yr-more{font-size:11px;color:#a89a84;align-self:center;margin-left:4px;}
+#yardEmpty{
+  margin:auto;text-align:center;color:#b9a98f;font-family:Georgia,serif;
+  font-style:italic;font-size:13px;text-shadow:0 0 6px #000;padding:20px;
+}
+
+/* ---- RIGHT: store ---- */
+#store{background:var(--panel-deep);display:flex;flex-direction:column;min-width:0;}
+#storeTitle{
+  flex-shrink:0;text-align:center;font-family:'Merriweather',Georgia,serif;
+  font-weight:900;font-size:19px;color:#fff;
+  text-shadow:0 0 8px #000, 0 2px 0 #000;padding:8px 4px 6px;background:rgba(0,0,0,.35);
+}
+.sect-label{
+  flex-shrink:0;font-variant:small-caps;
+  font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:14px;
+  letter-spacing:.04em;color:var(--label);
+  text-shadow:1px 1px 0 var(--label-outline), -1px 1px 0 var(--label-outline), 1px -1px 0 var(--label-outline), -1px -1px 0 var(--label-outline);
+  background:rgba(0,0,0,.4);padding:4px 10px;
+  border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(0,0,0,.5);
+  display:flex;justify-content:space-between;align-items:baseline;
+}
+.sect-label .count{font-size:11px;font-variant:normal;color:#b6a88e;text-shadow:none;}
+#upgradeGrid{
+  flex-shrink:0;display:flex;flex-wrap:wrap;gap:6px;padding:8px;
+  max-height:132px;overflow-y:auto;
+}
+#upgradeGrid::-webkit-scrollbar{width:8px;}
+#upgradeGrid::-webkit-scrollbar-thumb{background:rgba(255,210,90,.3);border-radius:6px;}
+.upg{
+  width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;cursor:pointer;flex-shrink:0;background:var(--frame-fill);
+}
+.upg.affordable{background:var(--frame-fill-lit);box-shadow:0 0 8px rgba(255,210,90,.55);}
+.upg:not(.affordable){opacity:.35;cursor:not-allowed;}
+.upg:hover{filter:brightness(1.25);}
+#upgEmpty{width:100%;text-align:center;color:#9a8c77;font-size:11px;font-style:italic;padding:10px 4px;}
+
+#buyRow{flex-shrink:0;display:flex;gap:4px;padding:6px 8px;background:rgba(0,0,0,.3);}
+.buy-opt{
+  flex:1;font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:11px;
+  color:#ccc;background:rgba(0,0,0,.45);border:2px solid rgba(0,0,0,.6);
+  border-radius:3px;padding:4px 0;cursor:pointer;
+}
+.buy-opt:hover{color:#fff;}
+.buy-opt.active{
+  color:#fff;background:var(--frame-fill-lit);
+  border-color:var(--gold-tl) var(--gold-tr) var(--gold-br) var(--gold-bl);
+}
+#products{flex:1 1 auto;overflow-y:auto;min-height:0;}
+#products::-webkit-scrollbar{width:9px;}
+#products::-webkit-scrollbar-thumb{background:rgba(255,210,90,.3);border-radius:6px;}
+#products::-webkit-scrollbar-track{background:rgba(0,0,0,.3);}
+
+.product{
+  display:flex;align-items:center;gap:8px;height:64px;padding:0 8px;
+  cursor:pointer;border-bottom:1px solid rgba(0,0,0,.5);position:relative;overflow:hidden;
+}
+.product:nth-child(odd){background:var(--row-a);}
+.product:nth-child(even){background:var(--row-b);}
+.product.locked{opacity:.6;filter:grayscale(.55);cursor:not-allowed;}
+.product:not(.locked):hover{background:rgba(120,80,30,.55);}
+.pIcon{
+  width:48px;height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:34px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6));
+}
+.pInfo{flex:1 1 auto;min-width:0;}
+.pName{
+  font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:13px;color:#fff;
+  text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.pPrice{
+  margin-top:3px;font-weight:700;font-size:13px;color:var(--green);
+  text-shadow:0 1px 2px #000;display:flex;align-items:center;gap:3px;
+}
+.product.locked .pPrice{color:var(--red);}
+.pOwned{
+  flex-shrink:0;font-family:'Merriweather',Georgia,serif;font-weight:900;
+  font-size:34px;line-height:1;color:#000;
+  text-shadow:0 0 6px rgba(255,255,255,.45), 0 1px 0 rgba(255,255,255,.25);
+  min-width:30px;text-align:right;
+}
+
+/* ---- tooltip ---- */
+#tip{
+  position:fixed;width:252px;padding:9px 11px;z-index:120;pointer-events:none;
+  box-shadow:0 6px 18px rgba(0,0,0,.6);
+}
+#tip[hidden]{display:none;}
+#tip .tipName{
+  font-family:'Merriweather',Georgia,serif;font-weight:900;font-size:110%;color:#fff;
+  text-shadow:0 1px 2px #000;
+}
+#tip .tipKind{font-size:80%;color:#bda77f;font-variant:small-caps;letter-spacing:.04em;}
+#tip .tipPrice{font-weight:700;color:var(--green);margin-top:3px;}
+#tip .tipPrice.cant{color:var(--red);}
+#tip .tipPrice:empty{display:none;}
+#tip .tipDesc{color:#ccc;margin-top:6px;line-height:1.45;}
+#tip .tipQuote{font-family:Georgia,serif;font-style:italic;color:#e0cfae;margin-top:6px;line-height:1.4;}
+#tip .tipQuote:empty{display:none;}
+#tip .tipData{
+  font-size:80%;color:#b6a88e;margin-top:7px;line-height:1.5;white-space:pre-line;
+  border-top:1px solid rgba(255,255,255,.14);padding-top:5px;
+}
+#tip .tipData:empty{display:none;border:none;padding:0;margin:0;}
+
+/* ---- achievement popups ---- */
+#achPops{
+  position:fixed;right:14px;bottom:14px;z-index:130;
+  display:flex;flex-direction:column;gap:8px;align-items:flex-end;
+  pointer-events:none;max-width:300px;
+}
+.achPop{
+  display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;
+  animation:popIn .3s ease-out;
+}
+.achPop .ic{font-size:28px;flex-shrink:0;}
+.achPop .tx{min-width:0;}
+.achPop .t1{
+  font-size:10px;font-variant:small-caps;letter-spacing:.06em;color:#ffdf5c;
+  text-shadow:0 1px 2px #000;
+}
+.achPop .t2{
+  font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:13px;color:#fff;
+  text-shadow:0 1px 2px #000;
+}
+@keyframes popIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* ---- menu overlay ---- */
+#modalBack{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;
+}
+#modalBack[hidden]{display:none;}
+#modal{width:100%;max-width:560px;max-height:88%;display:flex;flex-direction:column;padding:0;}
+#modalHead{
+  flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:rgba(0,0,0,.35);gap:10px;
+}
+#modalTitle{
+  margin:0;font-family:'Merriweather',Georgia,serif;font-weight:900;font-size:17px;color:#fff;
+  text-shadow:0 0 6px #000;
+}
+#modalClose{
+  font-family:'Merriweather',Georgia,serif;font-weight:700;color:#fff;
+  background:var(--frame-fill-lit);border-style:solid;border-width:2px;
+  border-color:var(--gold-tl) var(--gold-tr) var(--gold-br) var(--gold-bl);
+  padding:4px 14px;cursor:pointer;flex-shrink:0;
+}
+#modalBody{padding:12px 14px 16px;overflow-y:auto;min-height:0;}
+#modalBody::-webkit-scrollbar{width:9px;}
+#modalBody::-webkit-scrollbar-thumb{background:rgba(255,210,90,.3);border-radius:6px;}
+.mSect{
+  font-variant:small-caps;font-family:'Merriweather',Georgia,serif;font-weight:700;
+  font-size:14px;color:var(--label);
+  text-shadow:1px 1px 0 var(--label-outline);
+  margin:14px 0 7px;padding-bottom:3px;border-bottom:1px solid rgba(255,255,255,.14);
+}
+.mSect:first-child{margin-top:0;}
+.srow{display:flex;justify-content:space-between;gap:10px;padding:4px 2px;}
+.srow span:first-child{color:#d8c7a6;}
+.srow span:last-child{font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
+#modalBody p{color:#d8c7a6;line-height:1.55;margin:0 0 9px;}
+.gridWrap{display:flex;flex-wrap:wrap;gap:6px;}
+.ach{
+  width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+  font-size:23px;flex-shrink:0;background:var(--frame-fill);
+  border-style:solid;border-width:3px;
+  border-color:var(--gold-tl) var(--gold-tr) var(--gold-br) var(--gold-bl);
+  cursor:help;
+}
+.ach.got{background:var(--frame-fill-lit);box-shadow:0 0 8px rgba(255,210,90,.5);}
+.ach.locked{filter:grayscale(1) brightness(.4);opacity:.65;}
+
+#toast{
+  position:fixed;left:50%;bottom:max(18px, env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);padding:9px 18px;font-weight:700;color:#fff;
+  background:rgba(0,0,0,.88);border-style:solid;border-width:2px;
+  border-color:var(--gold-tl) var(--gold-tr) var(--gold-br) var(--gold-bl);
+  z-index:95;opacity:0;pointer-events:none;transition:opacity .22s ease;
+  text-align:center;max-width:min(90vw,420px);
+}
+#toast.show{opacity:1;}
+
+@media (max-width:1000px){
+  #game{grid-template-columns: minmax(230px, 38%) 1fr;}
+  #mid{display:none;}
+}
+@media (max-width:680px){
+  html,body{height:auto;}
+  body{overflow:auto;}
+  #shell{height:auto;}
+  #game{grid-template-columns:1fr;height:auto;}
+  #left{border-right:none;border-bottom:3px solid rgba(0,0,0,.6);min-height:60vh;}
+  #store{min-height:60vh;}
+  #tip{display:none !important;}
+}
+@media (prefers-reduced-motion: reduce){
+  #pineShine,.golden,.golden .g-shine,.float-pop,.achPop{animation:none !important;}
+}
+</style>
+
+<div id="shell">
+  <div id="topbar">
+    <span class="brand">Pineapple Empire</span>
+    <span class="links">
+      <button id="saveBtn" type="button">Save</button>
+      <button id="resetBtn" type="button">Reset</button>
+    </span>
+  </div>
+
+  <div id="game">
+    <section id="left">
+      <div id="counterBand">
+        <span id="bigCount" class="serif">0 chunks</span>
+        <span id="perSecond">per second : 0</span>
+        <span id="frenzyTag">PINEAPPLE FRENZY! x7</span>
+      </div>
+      <div id="clickWrap">
+        <div id="clickZone" role="button" tabindex="0" aria-label="Harvest the pineapple">
+          <div id="pineShine"></div>
+          <img id="pineImg" src="/images/pineshine" alt="A giant pineapple">
+        </div>
+      </div>
+      <div id="juiceWrap">
+        <div id="juiceLabel">Juice : 0%</div>
+        <div id="juiceBar"><div id="juiceFill"></div></div>
+      </div>
+    </section>
+
+    <section id="mid">
+      <div id="midHead">
+        <div class="corner-pair">
+          <button class="corner-btn" id="statsBtn" type="button">Stats</button>
+          <button class="corner-btn" id="achBtn" type="button">Awards</button>
+        </div>
+        <div id="quote">A pineapple a day keeps the doctor employed.</div>
+        <div class="corner-pair">
+          <button class="corner-btn" id="infoBtn" type="button">Info</button>
+          <button class="corner-btn" id="saveBtn2" type="button">Save</button>
+        </div>
+      </div>
+      <div id="yard">
+        <div id="yardEmpty">Your plantation is empty. Buy something from the store.</div>
+      </div>
+    </section>
+
+    <section id="store">
+      <div id="storeTitle" class="serif">Store</div>
+      <div class="sect-label">Upgrades <span class="count" id="upgCount"></span></div>
+      <div id="upgradeGrid"></div>
+      <div class="sect-label">Buildings</div>
+      <div id="buyRow">
+        <button class="buy-opt active" data-n="1" type="button">buy 1</button>
+        <button class="buy-opt" data-n="10" type="button">10</button>
+        <button class="buy-opt" data-n="100" type="button">100</button>
+        <button class="buy-opt" data-n="max" type="button">max</button>
+      </div>
+      <div id="products"></div>
+    </section>
+  </div>
+</div>
+
+<div id="tip" class="frame" hidden>
+  <div class="tipName"></div>
+  <div class="tipKind"></div>
+  <div class="tipPrice"></div>
+  <div class="tipDesc"></div>
+  <div class="tipQuote"></div>
+  <div class="tipData"></div>
+</div>
+
+<div id="modalBack" hidden>
+  <div id="modal" class="frame">
+    <div id="modalHead">
+      <h2 id="modalTitle">Statistics</h2>
+      <button id="modalClose" type="button">Close</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div id="achPops"></div>
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+var PINE_URL = "/images/pine";
+
+// declared up here because the achievement list formats numbers as it is built
+var SCALE = ["million","billion","trillion","quadrillion","quintillion",
+             "sextillion","septillion","octillion","nonillion","decillion"];
+
+// ============================================================ buildings
+var BUILDINGS = [
+  {id:"sprout", name:"Pineapple Sprout", icon:"🌱", cost:15, cps:0.1,
+   desc:"A hopeful little sprout, pushing up through warm soil.",
+   quote:"It has no idea how big this is going to get."},
+  {id:"picker", name:"Fruit Picker", icon:"🧺", cost:100, cps:1,
+   desc:"A seasonal worker who hand-picks the ripest fruit.",
+   quote:"Paid in chunks, naturally."},
+  {id:"juicer", name:"Juice Press", icon:"🥤", cost:1100, cps:8,
+   desc:"A heavy iron press that squeezes fruit into gold.",
+   quote:"Mind your fingers."},
+  {id:"cannery", name:"Cannery", icon:"🥫", cost:12000, cps:47,
+   desc:"Slices, rings and crushes, sealed by the crate.",
+   quote:"Shelf-stable for roughly one geological era."},
+  {id:"ship", name:"Export Ship", icon:"🚢", cost:130000, cps:260,
+   desc:"Hauls your chunks to ports that have never seen a pineapple.",
+   quote:"The crew has stopped asking what is in the hold."},
+  {id:"tiki", name:"Tiki Bar", icon:"🍹", cost:1400000, cps:1400,
+   desc:"Blends your harvest into something with an umbrella in it.",
+   quote:"Happy hour never technically ended."},
+  {id:"plant", name:"Mega Plantation", icon:"🌴", cost:20000000, cps:7800,
+   desc:"Rows of pineapples running clean to the horizon.",
+   quote:"Visible from orbit on a clear day."},
+  {id:"factory", name:"Juice Factory", icon:"🏭", cost:330000000, cps:44000,
+   desc:"Industrial squeezing, around the clock, forever.",
+   quote:"The smell has soaked into the walls. Nobody minds."},
+  {id:"lab", name:"Tropical Lab", icon:"🧪", cost:5100000000, cps:260000,
+   desc:"Breeds fruit that is bigger, sweeter and faintly self-aware.",
+   quote:"Specimen 12 asked for a lawyer."},
+  {id:"deity", name:"Pineapple Deity", icon:"🗿", cost:75000000000, cps:1600000,
+   desc:"An ancient fruit god, roused by the scent of juice.",
+   quote:"It remembers when the island was young."}
+];
+var BY_ID = {};
+BUILDINGS.forEach(function(b){ BY_ID[b.id] = b; });
+
+// ============================================================ upgrades
+// tiered building upgrades: unlocked at N owned, each doubles that building
+var TIERS = [
+  {need:1,   costX:10},
+  {need:5,   costX:100},
+  {need:25,  costX:500},
+  {need:50,  costX:5000},
+  {need:100, costX:50000}
+];
+var TIER_NAMES = {
+  sprout : ["Fertile Soil","Rich Compost","Greenhouse Glass","Hydroponic Trays","Soil Whisperers"],
+  picker : ["Nimble Gloves","Picking Contest","Padded Ladders","Union Contracts","Harvest Festival"],
+  juicer : ["Double Press","Pressure Pumps","Titanium Screws","Hydraulic Rams","Perpetual Press"],
+  cannery: ["Assembly Line","Quality Control","Vacuum Sealers","Syrup Refinery","Tin Monopoly"],
+  ship   : ["Bigger Hull","Trade Routes","Refrigerated Holds","Container Cranes","Admiral's Charts"],
+  tiki   : ["Happy Hour","Paper Umbrellas","Crushed Ice Machine","Secret Recipe","Eternal Luau"],
+  plant  : ["Irrigation Canals","Crop Rotation","Drone Surveying","Weather Control","Horizon Fields"],
+  factory: ["Robotic Arms","Night Shift","Conveyor Overhaul","Fusion Boilers","Zero-Waste Loop"],
+  lab    : ["Gene Splicing","Peer Review","Accelerated Ripening","Quantum Germination","Sentient Cultivars"],
+  deity  : ["Stone Offerings","Temple Restoration","Festival of Juice","Divine Mandate","Fruit of Creation"]
+};
+
+var UPGRADES = [];
+BUILDINGS.forEach(function(b){
+  TIERS.forEach(function(t, i){
+    UPGRADES.push({
+      id: b.id + "_t" + (i+1),
+      name: TIER_NAMES[b.id][i],
+      icon: b.icon,
+      cost: Math.ceil(b.cost * t.costX),
+      type: "building",
+      building: b.id,
+      mult: 2,
+      need: t.need,
+      desc: b.name + "s are twice as efficient.",
+      kind: "Building upgrade"
+    });
+  });
+});
+
+[
+  ["click_1","Sharper Fingers","👆",100],
+  ["click_2","Steel Thumbs","🤛",500],
+  ["click_3","Golden Gauntlet","🧤",10000],
+  ["click_4","Diamond Nails","💎",100000],
+  ["click_5","Machete Technique","🗡️",1000000],
+  ["click_6","Pneumatic Chopper","⚙️",10000000],
+  ["click_7","Infinity Pineapple","♾️",100000000],
+  ["click_8","Harvest Trance","🌀",1000000000]
+].forEach(function(u){
+  UPGRADES.push({id:u[0], name:u[1], icon:u[2], cost:u[3], type:"click", mult:2,
+    desc:"Harvesting by hand gives twice as many chunks.", kind:"Hand upgrade"});
+});
+
+UPGRADES.push({id:"share_1", name:"Plantation Reflexes", icon:"🤚", cost:5000000, type:"clickshare", pct:0.01,
+  desc:"Each harvest also gives 1% of your chunks per second.", kind:"Hand upgrade"});
+UPGRADES.push({id:"share_2", name:"Hands of the Harvest", icon:"🙌", cost:500000000, type:"clickshare", pct:0.05,
+  desc:"Each harvest also gives another 5% of your chunks per second.", kind:"Hand upgrade"});
+
+[
+  ["parrot_1","Parrot Helpers","🦜",9000000,0.10],
+  ["parrot_2","Parrot Workers","🐦",90000000,0.125],
+  ["parrot_3","Parrot Engineers","🦅",9000000000,0.15],
+  ["parrot_4","Parrot Overseers","🦶",90000000000,0.175]
+].forEach(function(u){
+  UPGRADES.push({id:u[0], name:u[1], icon:u[2], cost:u[3], type:"parrot", rate:u[4],
+    desc:"Your parrots drink the juice. Production rises by " + Math.round(u[4]*100) + "% of your juice level.",
+    kind:"Parrot upgrade"});
+});
+
+[
+  ["gold_1","Lucky Day","🍀",777777,{freq:2}],
+  ["gold_2","Serendipity","✨",7777777,{freq:2}],
+  ["gold_3","Get Lucky","🎰",77777777,{dur:2}],
+  ["gold_4","Sun Worship","☀️",777777777,{power:1.5}]
+].forEach(function(u){
+  var e = u[4];
+  var d = e.freq ? "Golden pineapples appear twice as often."
+        : e.dur  ? "Golden pineapple frenzies last twice as long."
+                 : "Golden pineapple payouts are 50% larger.";
+  UPGRADES.push({id:u[0], name:u[1], icon:u[2], cost:u[3], type:"golden", eff:e, desc:d, kind:"Golden upgrade"});
+});
+
+[
+  ["global_1","Tropical Trade Deal","🤝",1000000,1.25],
+  ["global_2","Pineapple Monopoly","👑",2000000000,1.25],
+  ["global_3","Island Mythology","🌋",200000000000,1.5]
+].forEach(function(u){
+  UPGRADES.push({id:u[0], name:u[1], icon:u[2], cost:u[3], type:"global", mult:u[4],
+    desc:"Everything you own produces " + Math.round((u[4]-1)*100) + "% more.", kind:"Empire upgrade"});
+});
+
+// ============================================================ achievements
+var ACHIEVEMENTS = [];
+function ach(id, name, desc, icon, test){
+  ACHIEVEMENTS.push({id:id, name:name, desc:desc, icon:icon, test:test});
+}
+function earnedAtLeast(n){ return function(){ return S.totalEarned >= n; }; }
+
+[
+  ["First Taste", 1, "🍍"],
+  ["Snack Sized", 100, "🥄"],
+  ["Fruit Bowl", 1000, "🥗"],
+  ["Market Stall", 10000, "🏪"],
+  ["Juice Stand", 100000, "🧃"],
+  ["Fruit Baron", 1e6, "🎩"],
+  ["Tropical Tycoon", 1e7, "💼"],
+  ["Canned Fortune", 1e8, "🥫"],
+  ["Island Economy", 1e9, "🏝️"],
+  ["Continental Supply", 1e11, "🌍"],
+  ["Pineapple Singularity", 1e12, "🌌"]
+].forEach(function(a, i){
+  ach("earn"+i, a[0], "Harvest " + fmtPlain(a[1]) + " chunks in total.", a[2], earnedAtLeast(a[1]));
+});
+
+[
+  ["Tap Happy", 10, "👆"],
+  ["Hundred Hands", 100, "👐"],
+  ["Blistered", 1000, "🩹"],
+  ["Carpal Tunnel Vision", 10000, "👁️"],
+  ["Unstoppable Thumb", 50000, "💪"]
+].forEach(function(a, i){
+  ach("click"+i, a[0], "Harvest by hand " + fmtPlain(a[1]) + " times.", a[2],
+    (function(n){ return function(){ return S.totalClicks >= n; }; })(a[1]));
+});
+
+var ACH_BUILD_NAMES = {
+  sprout : ["Green Thumb","Nursery Row","Sea of Sprouts"],
+  picker : ["Hired Help","Picking Crew","Harvest Army"],
+  juicer : ["Fresh Squeezed","Press Gang","River of Juice"],
+  cannery: ["Sealed In","Canning Season","Tin City"],
+  ship   : ["Bon Voyage","Merchant Fleet","Armada"],
+  tiki   : ["Umbrella Drink","Last Call","Permanent Vacation"],
+  plant  : ["Room to Grow","Checkerboard Fields","Horizon to Horizon"],
+  factory: ["Mass Production","Three Shifts","Industrial Sprawl"],
+  lab    : ["Peer Reviewed","Breakthrough","Mad Botany"],
+  deity  : ["It Stirs","Pantheon","Fruit of the Gods"]
+};
+var ACH_BUILD_TIERS = [1, 25, 100];
+BUILDINGS.forEach(function(b){
+  ACH_BUILD_TIERS.forEach(function(n, i){
+    ach(b.id + "_a" + i, ACH_BUILD_NAMES[b.id][i],
+      "Own " + n + " " + b.name + (n === 1 ? "." : "s."), b.icon,
+      (function(id, need){ return function(){ return S.owned[id] >= need; }; })(b.id, n));
+  });
+});
+
+ach("misc_golden",  "Shiny!", "Click a golden pineapple.", "✨", function(){ return S.goldenClicked >= 1; });
+ach("misc_golden10","Lucky Streak", "Click 10 golden pineapples.", "🍀", function(){ return S.goldenClicked >= 10; });
+ach("misc_frenzy",  "Frenzied", "Set off a pineapple frenzy.", "⚡", function(){ return S.frenzies >= 1; });
+ach("misc_upg10",   "Window Shopper", "Buy 10 upgrades.", "🛒", function(){ return upgradesOwned() >= 10; });
+ach("misc_upg30",   "Well Equipped", "Buy 30 upgrades.", "🧰", function(){ return upgradesOwned() >= 30; });
+ach("misc_all",     "Diversified", "Own at least one of every building.", "🏛️", function(){
+  for(var i=0;i<BUILDINGS.length;i++){ if(S.owned[BUILDINGS[i].id] < 1) return false; }
+  return true;
+});
+ach("misc_cps1k",   "Hands Off", "Reach 1,000 chunks per second.", "🤖", function(){ return baseCps() >= 1000; });
+ach("misc_cps1m",   "Automated Paradise", "Reach 1 million chunks per second.", "🌊", function(){ return baseCps() >= 1e6; });
+ach("misc_hour",    "Dedicated", "Play for one hour.", "⏳", function(){ return Date.now() - S.startedAt >= 3600000; });
+ach("misc_juice50", "Juiced Up", "Fill your juice to 50%.", "🥤", function(){ return juiceFrac() >= 0.5; });
+
+// ============================================================ quotes
+var QUOTES = [
+  "A pineapple a day keeps the doctor employed.",
+  "The plantation hums with the sound of ripening fruit.",
+  "Somewhere, a parrot is judging your business decisions.",
+  "News: local juice prices described as “structurally silly”.",
+  "The Pineapple Deity is said to prefer a crushed blend.",
+  "News: island declares pineapple an official unit of currency.",
+  "Your workers are humming something tropical.",
+  "The export ships have not sunk once. Yet.",
+  "Legend says the first pineapple grew from pure sunshine.",
+  "News: scientists confirm the fruit is, in fact, delicious.",
+  "A parrot has learned to say “quarterly earnings”.",
+  "News: rival mango cartel declines to comment."
+];
+
+// ============================================================ state
+var S = {
+  chunks:0, totalEarned:0, totalClicks:0, handPower:1,
+  owned:{}, upgrades:{}, achievements:{},
+  goldenClicked:0, frenzies:0, startedAt:Date.now()
+};
+BUILDINGS.forEach(function(b){ S.owned[b.id] = 0; });
+
+function load(){
+  try{
+    var raw = localStorage.getItem("pineappleEmpireSave");
+    if(!raw) return;
+    var d = JSON.parse(raw);
+    if(!d || typeof d !== "object") return;
+    S.chunks        = Number(d.chunks) || 0;
+    S.totalEarned   = Number(d.totalEarned) || 0;
+    S.totalClicks   = Number(d.totalClicks) || 0;
+    S.goldenClicked = Number(d.goldenClicked) || 0;
+    S.frenzies      = Number(d.frenzies) || 0;
+    S.startedAt     = Number(d.startedAt) || Date.now();
+    S.lastSeen      = Number(d.lastSeen) || 0;
+    if(d.owned) BUILDINGS.forEach(function(b){ S.owned[b.id] = Number(d.owned[b.id]) || 0; });
+    S.upgrades     = d.upgrades || {};
+    S.achievements = d.achievements || {};
+  }catch(e){}
+}
+function save(){
+  try{
+    S.lastSeen = Date.now();
+    localStorage.setItem("pineappleEmpireSave", JSON.stringify(S));
+  }catch(e){}
+}
+
+// ============================================================ maths
+function costOf(b, have, qty){
+  var total = 0;
+  for(var i=0;i<qty;i++) total += Math.ceil(b.cost * Math.pow(1.15, have + i));
+  return total;
+}
+function maxBuy(b){
+  var have = S.owned[b.id], n = 0, total = 0;
+  while(n < 5000){
+    var next = Math.ceil(b.cost * Math.pow(1.15, have + n));
+    if(total + next > S.chunks) break;
+    total += next; n++;
+  }
+  return {n:n, total:total};
+}
+// every multiplier is derived once and cached; invalidated when something changes
+var _m = null;
+function invalidateMults(){ _m = null; }
+function M(){
+  if(_m) return _m;
+  var m = {bld:{}, global:1, click:1, share:0, parrotRate:0,
+           gfreq:1, gdur:1, gpower:1, upgCount:0, achCount:0};
+  for(var i=0;i<BUILDINGS.length;i++) m.bld[BUILDINGS[i].id] = 1;
+  for(var j=0;j<UPGRADES.length;j++){
+    var u = UPGRADES[j];
+    if(!S.upgrades[u.id]) continue;
+    m.upgCount++;
+    if(u.type === "building")        m.bld[u.building] *= u.mult;
+    else if(u.type === "global")     m.global *= u.mult;
+    else if(u.type === "click")      m.click  *= u.mult;
+    else if(u.type === "clickshare") m.share  += u.pct;
+    else if(u.type === "parrot")     m.parrotRate += u.rate;
+    else if(u.type === "golden"){
+      if(u.eff.freq)  m.gfreq  *= u.eff.freq;
+      if(u.eff.dur)   m.gdur   *= u.eff.dur;
+      if(u.eff.power) m.gpower *= u.eff.power;
+    }
+  }
+  for(var k=0;k<ACHIEVEMENTS.length;k++) if(S.achievements[ACHIEVEMENTS[k].id]) m.achCount++;
+  m.juice  = m.achCount / ACHIEVEMENTS.length;
+  m.parrot = 1 + m.parrotRate * m.juice;
+  _m = m;
+  return m;
+}
+function upgradesOwned(){ return M().upgCount; }
+function achCount(){ return M().achCount; }
+function juiceFrac(){ return M().juice; }
+function buildingMult(id){ return M().bld[id]; }
+function globalMult(){ return M().global; }
+function parrotMult(){ return M().parrot; }
+function clickMult(){ return M().click; }
+function clickShare(){ return M().share; }
+function goldenEff(key, start){
+  var m = M();
+  return start * (key === "freq" ? m.gfreq : key === "dur" ? m.gdur : m.gpower);
+}
+function buildingCps(b){ return b.cps * S.owned[b.id] * buildingMult(b.id); }
+function baseCps(){
+  var sum = 0;
+  for(var i=0;i<BUILDINGS.length;i++) sum += buildingCps(BUILDINGS[i]);
+  return sum * globalMult() * parrotMult();
+}
+var frenzyUntil = 0;
+function frenzyOn(){ return Date.now() < frenzyUntil; }
+function liveCps(){ return baseCps() * (frenzyOn() ? 7 : 1); }
+function clickValue(){
+  var v = S.handPower * clickMult() * globalMult() + baseCps() * clickShare();
+  return v * (frenzyOn() ? 7 : 1);
+}
+
+// ============================================================ formatting
+function withCommas(n){
+  return Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function fmt(n){
+  if(!isFinite(n) || isNaN(n) || n < 0) return "0";
+  if(n < 1000000) return withCommas(n);
+  var tier = Math.floor(Math.log10(n) / 3) - 1;
+  if(tier >= SCALE.length) tier = SCALE.length - 1;
+  return (n / Math.pow(1000, tier + 1)).toFixed(3) + " " + SCALE[tier];
+}
+function fmtPlain(n){ return fmt(n); }
+function fmtRate(n){
+  if(n >= 1000000) return fmt(n);
+  if(n >= 100) return withCommas(n);
+  return (Math.round(n * 10) / 10).toString();
+}
+function fmtTime(ms){
+  var s = Math.floor(ms/1000);
+  var d = Math.floor(s/86400); s -= d*86400;
+  var h = Math.floor(s/3600);  s -= h*3600;
+  var m = Math.floor(s/60);    s -= m*60;
+  var out = [];
+  if(d) out.push(d+"d");
+  if(h) out.push(h+"h");
+  if(m) out.push(m+"m");
+  out.push(s+"s");
+  return out.slice(0,3).join(" ");
+}
+
+load();
+
+// ============================================================ dom
+var $ = function(id){ return document.getElementById(id); };
+var elCount = $("bigCount"), elPer = $("perSecond"), elFrenzy = $("frenzyTag");
+var elProducts = $("products"), elUpgrades = $("upgradeGrid"), elUpgCount = $("upgCount");
+var elYard = $("yard"), elYardEmpty = $("yardEmpty");
+var elTip = $("tip"), elQuote = $("quote"), elToast = $("toast");
+var elJuiceLabel = $("juiceLabel"), elJuiceFill = $("juiceFill");
+var elAchPops = $("achPops");
+var clickZone = $("clickZone");
+var buyMode = 1;
+
+var toastTimer = null;
+function toast(msg){
+  elToast.textContent = msg;
+  elToast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ elToast.classList.remove("show"); }, 2600);
+}
+
+// ============================================================ tooltip
+var tipFor = null;
+function showTip(o, anchor){
+  elTip.querySelector(".tipName").textContent = o.name;
+  elTip.querySelector(".tipKind").textContent = o.kind || "";
+  var p = elTip.querySelector(".tipPrice");
+  p.textContent = o.price || "";
+  p.classList.toggle("cant", !!o.cant);
+  elTip.querySelector(".tipDesc").textContent  = o.desc || "";
+  elTip.querySelector(".tipQuote").textContent = o.quote || "";
+  elTip.querySelector(".tipData").textContent  = o.data || "";
+  elTip.hidden = false;
+  var r = anchor.getBoundingClientRect();
+  var w = elTip.offsetWidth;
+  var left = r.left - w - 12;
+  if(left < 8) left = Math.min(r.right + 12, window.innerWidth - w - 8);
+  var h = elTip.offsetHeight;
+  var top = r.top;
+  if(top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
+  elTip.style.left = left + "px";
+  elTip.style.top = top + "px";
+}
+function hideTip(){ elTip.hidden = true; tipFor = null; }
+
+// ============================================================ store rows (built once)
+var rows = [];
+BUILDINGS.forEach(function(b){
+  var row = document.createElement("div");
+  row.className = "product locked";
+  row.setAttribute("role","button");
+  row.tabIndex = 0;
+
+  var icon = document.createElement("div");
+  icon.className = "pIcon";
+  icon.textContent = b.icon;
+
+  var info = document.createElement("div");
+  info.className = "pInfo";
+  var nm = document.createElement("div");
+  nm.className = "pName";
+  nm.textContent = b.name;
+  var pr = document.createElement("div");
+  pr.className = "pPrice";
+  var coin = document.createElement("span");
+  coin.textContent = "🍍";
+  var cost = document.createElement("span");
+  pr.appendChild(coin); pr.appendChild(cost);
+  info.appendChild(nm); info.appendChild(pr);
+
+  var own = document.createElement("div");
+  own.className = "pOwned";
+  own.textContent = "0";
+
+  row.appendChild(icon); row.appendChild(info); row.appendChild(own);
+  elProducts.appendChild(row);
+
+  var rec = {b:b, el:row, costEl:cost, ownEl:own, lastCost:-1, lastOwn:-1, lastLocked:null, qty:1, price:0};
+  rows.push(rec);
+
+  row.addEventListener("click", function(){ buyBuilding(rec); });
+  row.addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); buyBuilding(rec); }
+  });
+  row.addEventListener("mouseenter", function(){ tipFor = rec; paintTip(); });
+  row.addEventListener("mouseleave", hideTip);
+});
+
+function paintTip(){
+  if(!tipFor) return;
+  var rec = tipFor, b = rec.b;
+  var mine  = buildingCps(b) * globalMult() * parrotMult();
+  var total = baseCps();
+  var each  = b.cps * buildingMult(b.id) * globalMult() * parrotMult();
+  var data = "each one produces " + fmtRate(each) + " per second\n"
+           + S.owned[b.id] + " owned, producing " + fmtRate(mine) + " per second"
+           + (total > 0 ? " (" + (mine/total*100).toFixed(1) + "% of your total)" : "");
+  showTip({
+    name: b.name + (rec.qty > 1 ? "  ×" + rec.qty : ""),
+    kind: "Building",
+    price: fmt(rec.price) + " chunks",
+    cant: S.chunks < rec.price,
+    desc: b.desc,
+    quote: "“" + b.quote + "”",
+    data: data
+  }, rec.el);
+}
+
+function buyBuilding(rec){
+  var b = rec.b, qty, price;
+  if(buyMode === "max"){
+    var m = maxBuy(b);
+    qty = m.n; price = m.total;
+  } else {
+    qty = buyMode;
+    price = costOf(b, S.owned[b.id], qty);
+  }
+  if(qty <= 0 || S.chunks < price){ toast("Not enough chunks for " + b.name + "."); return; }
+  S.chunks -= price;
+  S.owned[b.id] += qty;
+  refreshUpgradeList();
+  paint();
+  if(tipFor === rec) paintTip();
+}
+
+// ============================================================ upgrades
+var upgSlots = [], upgSignature = "";
+function availableUpgrades(){
+  return UPGRADES.filter(function(u){
+    if(S.upgrades[u.id]) return false;
+    if(u.type === "building" && S.owned[u.building] < (u.need || 1)) return false;
+    return S.totalEarned >= u.cost / 5;   // drip-feed, like Cookie Clicker
+  }).sort(function(a,b){ return a.cost - b.cost; });
+}
+function upgTipFor(u){
+  return {
+    name: u.name,
+    kind: u.kind,
+    price: fmt(u.cost) + " chunks",
+    cant: S.chunks < u.cost,
+    desc: u.desc,
+    quote: "",
+    data: u.type === "parrot"
+      ? "your juice is at " + Math.round(juiceFrac()*100) + "% right now"
+      : "Bought once, kept forever."
+  };
+}
+function refreshUpgradeList(){
+  var list = availableUpgrades();
+  var sig = list.map(function(u){ return u.id; }).join("|");
+  elUpgCount.textContent = upgradesOwned() + " owned";
+  if(sig === upgSignature) return;
+  upgSignature = sig;
+  upgSlots = [];
+  elUpgrades.innerHTML = "";
+  if(list.length === 0){
+    var none = document.createElement("div");
+    none.id = "upgEmpty";
+    none.textContent = "Grow your empire to unlock upgrades.";
+    elUpgrades.appendChild(none);
+    return;
+  }
+  list.forEach(function(u){
+    var slot = document.createElement("div");
+    slot.className = "upg frame";
+    slot.setAttribute("role","button");
+    slot.tabIndex = 0;
+    slot.textContent = u.icon;
+    elUpgrades.appendChild(slot);
+    var rec = {u:u, el:slot, lastAfford:null};
+    upgSlots.push(rec);
+    slot.addEventListener("click", function(){ buyUpgrade(rec); });
+    slot.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); buyUpgrade(rec); }
+    });
+    slot.addEventListener("mouseenter", function(){ showTip(upgTipFor(u), slot); });
+    slot.addEventListener("mouseleave", hideTip);
+  });
+}
+function buyUpgrade(rec){
+  var u = rec.u;
+  if(S.chunks < u.cost){ toast("Not enough chunks for " + u.name + " (" + fmt(u.cost) + ")."); return; }
+  S.chunks -= u.cost;
+  S.upgrades[u.id] = true;
+  invalidateMults();
+  hideTip();
+  toast("Bought " + u.name + "!");
+  refreshUpgradeList();
+  paint();
+}
+
+// ============================================================ achievements
+function unlockAch(a){
+  if(S.achievements[a.id]) return;
+  S.achievements[a.id] = true;
+  invalidateMults();
+  var pop = document.createElement("div");
+  pop.className = "achPop frame";
+  var ic = document.createElement("div");
+  ic.className = "ic"; ic.textContent = a.icon;
+  var tx = document.createElement("div");
+  tx.className = "tx";
+  var t1 = document.createElement("div");
+  t1.className = "t1"; t1.textContent = "Achievement unlocked";
+  var t2 = document.createElement("div");
+  t2.className = "t2"; t2.textContent = a.name;
+  tx.appendChild(t1); tx.appendChild(t2);
+  pop.appendChild(ic); pop.appendChild(tx);
+  elAchPops.appendChild(pop);
+  setTimeout(function(){ if(pop.parentNode) pop.remove(); }, 6000);
+}
+var lastAchCheck = 0;
+function checkAchievements(){
+  var now = Date.now();
+  if(now - lastAchCheck < 300) return;
+  lastAchCheck = now;
+  for(var i=0;i<ACHIEVEMENTS.length;i++){
+    var a = ACHIEVEMENTS[i];
+    if(!S.achievements[a.id] && a.test()) unlockAch(a);
+  }
+}
+
+// ============================================================ yard
+var yardRows = {};
+function refreshYard(){
+  var any = false;
+  BUILDINGS.forEach(function(b){
+    var n = S.owned[b.id];
+    if(n > 0) any = true;
+    var rec = yardRows[b.id];
+    if(n === 0){
+      if(rec){ rec.el.remove(); delete yardRows[b.id]; }
+      return;
+    }
+    if(!rec){
+      var el = document.createElement("div");
+      el.className = "yard-row";
+      var head = document.createElement("div");
+      head.className = "yr-head";
+      var title = document.createElement("span");
+      var rate = document.createElement("span");
+      rate.className = "yr-rate";
+      head.appendChild(title); head.appendChild(rate);
+      var sprites = document.createElement("div");
+      sprites.className = "yr-sprites";
+      el.appendChild(head); el.appendChild(sprites);
+      elYard.appendChild(el);
+      rec = yardRows[b.id] = {el:el, title:title, rate:rate, sprites:sprites, lastN:-1};
+    }
+    if(rec.lastN !== n){
+      rec.lastN = n;
+      rec.title.textContent = b.name + " × " + n;
+      var shown = Math.min(n, 48), html = "";
+      for(var i=0;i<shown;i++) html += "<span>" + b.icon + "</span>";
+      if(n > shown) html += '<span class="yr-more">+' + (n - shown) + " more</span>";
+      rec.sprites.innerHTML = html;
+    }
+    rec.rate.textContent = fmtRate(buildingCps(b) * globalMult() * parrotMult()) + "/sec";
+  });
+  elYardEmpty.hidden = any;
+}
+
+// ============================================================ paint
+var lastCountText = "", lastPerText = "", lastFrenzy = null, lastJuice = -1;
+function paint(){
+  var countText = fmt(S.chunks) + " chunk" + (Math.floor(S.chunks) === 1 ? "" : "s");
+  if(countText !== lastCountText){ elCount.textContent = countText; lastCountText = countText; }
+
+  var perText = "per second : " + fmtRate(liveCps());
+  if(perText !== lastPerText){ elPer.textContent = perText; lastPerText = perText; }
+
+  var fr = frenzyOn();
+  if(fr !== lastFrenzy){ elFrenzy.classList.toggle("on", fr); lastFrenzy = fr; }
+
+  var jp = Math.round(juiceFrac() * 1000) / 10;
+  if(jp !== lastJuice){
+    lastJuice = jp;
+    elJuiceLabel.textContent = "Juice : " + jp + "%  (" + achCount() + "/" + ACHIEVEMENTS.length + " awards)";
+    elJuiceFill.style.width = jp + "%";
+  }
+
+  for(var i=0;i<rows.length;i++){
+    var rec = rows[i], b = rec.b, qty, price;
+    if(buyMode === "max"){
+      var m = maxBuy(b);
+      qty = Math.max(1, m.n);
+      price = m.n > 0 ? m.total : costOf(b, S.owned[b.id], 1);
+    } else {
+      qty = buyMode;
+      price = costOf(b, S.owned[b.id], qty);
+    }
+    rec.qty = qty; rec.price = price;
+    if(price !== rec.lastCost){ rec.costEl.textContent = fmt(price); rec.lastCost = price; }
+    var own = S.owned[b.id];
+    if(own !== rec.lastOwn){ rec.ownEl.textContent = own; rec.lastOwn = own; }
+    var locked = S.chunks < price;
+    if(locked !== rec.lastLocked){ rec.el.classList.toggle("locked", locked); rec.lastLocked = locked; }
+  }
+
+  for(var j=0;j<upgSlots.length;j++){
+    var us = upgSlots[j];
+    var can = S.chunks >= us.u.cost;
+    if(can !== us.lastAfford){ us.el.classList.toggle("affordable", can); us.lastAfford = can; }
+  }
+
+  refreshYard();
+}
+
+// ============================================================ clicking
+function harvest(e){
+  var v = clickValue();
+  S.chunks += v; S.totalEarned += v; S.totalClicks++;
+  var r = clickZone.getBoundingClientRect();
+  var x = (e && e.clientX ? e.clientX - r.left : r.width/2) + (Math.random()*30 - 15);
+  var y = (e && e.clientY ? e.clientY - r.top  : r.height/2);
+  var pop = document.createElement("div");
+  pop.className = "float-pop";
+  pop.textContent = "+" + fmt(v);
+  pop.style.left = x + "px";
+  pop.style.top = y + "px";
+  clickZone.appendChild(pop);
+  setTimeout(function(){ pop.remove(); }, 1000);
+  paint();
+}
+clickZone.addEventListener("click", harvest);
+clickZone.addEventListener("keydown", function(e){
+  if(e.key === "Enter" || e.key === " "){ e.preventDefault(); harvest(null); }
+});
+
+// ============================================================ buy mode
+Array.prototype.forEach.call(document.querySelectorAll(".buy-opt"), function(btn){
+  btn.addEventListener("click", function(){
+    Array.prototype.forEach.call(document.querySelectorAll(".buy-opt"), function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    buyMode = btn.dataset.n === "max" ? "max" : parseInt(btn.dataset.n, 10);
+    rows.forEach(function(r){ r.lastCost = -1; });
+    paint();
+    if(tipFor) paintTip();
+  });
+});
+
+// ============================================================ golden pineapple
+var leftPanel = $("left");
+function spawnGolden(){
+  var g = document.createElement("div");
+  g.className = "golden";
+  g.innerHTML = '<div class="g-shine"></div><img src="' + PINE_URL + '" alt="Golden pineapple">';
+  var maxX = Math.max(10, leftPanel.clientWidth - 80);
+  var maxY = Math.max(10, leftPanel.clientHeight - 80);
+  g.style.left = (10 + Math.random() * maxX) + "px";
+  g.style.top  = (10 + Math.random() * maxY) + "px";
+  g.addEventListener("click", function(){
+    g.remove();
+    S.goldenClicked++;
+    if(Math.random() < 0.5){
+      var bonus = Math.max(25, baseCps() * 90 + clickValue() * 15) * goldenEff("power", 1);
+      S.chunks += bonus; S.totalEarned += bonus;
+      toast("Golden pineapple! +" + fmt(bonus) + " chunks");
+    } else {
+      S.frenzies++;
+      frenzyUntil = Date.now() + 30000 * goldenEff("dur", 1);
+      toast("PINEAPPLE FRENZY! Production x7 for " + Math.round(30 * goldenEff("dur",1)) + " seconds");
+    }
+    paint();
+  });
+  leftPanel.appendChild(g);
+  setTimeout(function(){ if(g.parentNode) g.remove(); }, 14000);
+}
+(function scheduleGolden(){
+  var base = 40000 + Math.random() * 50000;
+  setTimeout(function(){ spawnGolden(); scheduleGolden(); }, base / goldenEff("freq", 1));
+})();
+
+// ============================================================ quotes
+function rotateQuote(){ elQuote.textContent = QUOTES[Math.floor(Math.random()*QUOTES.length)]; }
+rotateQuote();
+setInterval(rotateQuote, 16000);
+
+// ============================================================ menus
+var modalBack = $("modalBack"), modalTitle = $("modalTitle"), modalBody = $("modalBody");
+function openModal(title, html){
+  modalTitle.textContent = title;
+  modalBody.innerHTML = html;
+  modalBack.hidden = false;
+  wireModalTips();
+}
+function srow(k, v){ return '<div class="srow"><span>'+k+'</span><span>'+v+'</span></div>'; }
+
+function openStats(){
+  var owned = 0;
+  BUILDINGS.forEach(function(b){ owned += S.owned[b.id]; });
+  var html =
+    '<div class="mSect">General</div>' +
+    srow("Chunks in bank", fmt(S.chunks)) +
+    srow("Chunks all time", fmt(S.totalEarned)) +
+    srow("Chunks per second", fmtRate(liveCps())) +
+    srow("Chunks per harvest", fmt(clickValue())) +
+    srow("Hand harvests", withCommas(S.totalClicks)) +
+    srow("Time played", fmtTime(Date.now() - S.startedAt)) +
+    '<div class="mSect">Empire</div>' +
+    srow("Buildings owned", withCommas(owned)) +
+    srow("Upgrades bought", upgradesOwned() + " / " + UPGRADES.length) +
+    srow("Awards earned", achCount() + " / " + ACHIEVEMENTS.length) +
+    srow("Juice", Math.round(juiceFrac()*1000)/10 + "%") +
+    srow("Parrot bonus", "+" + Math.round((parrotMult()-1)*1000)/10 + "% production") +
+    '<div class="mSect">Golden pineapples</div>' +
+    srow("Clicked", withCommas(S.goldenClicked)) +
+    srow("Frenzies set off", withCommas(S.frenzies)) +
+    srow("Frenzy", frenzyOn() ? "active (x7)" : "not active") +
+    '<div class="mSect">Buildings</div>';
+  BUILDINGS.forEach(function(b){
+    if(S.owned[b.id] > 0){
+      html += srow(b.icon + " " + b.name, S.owned[b.id] + "  ·  " + fmtRate(buildingCps(b)*globalMult()*parrotMult()) + "/sec");
+    }
+  });
+  if(owned === 0) html += '<p>You do not own any buildings yet.</p>';
+  openModal("Statistics", html);
+}
+
+function openAwards(){
+  var html = '<p>Every award you earn fills your <b>juice</b> meter. Parrot upgrades turn juice into extra production, so awards are worth chasing.</p>' +
+    '<div class="mSect">Awards &mdash; ' + achCount() + " / " + ACHIEVEMENTS.length + '</div><div class="gridWrap">';
+  ACHIEVEMENTS.forEach(function(a){
+    var got = !!S.achievements[a.id];
+    html += '<div class="ach ' + (got ? "got" : "locked") + '" data-ach="' + a.id + '">' + (got ? a.icon : "?") + '</div>';
+  });
+  html += '</div><div class="mSect">Upgrades owned &mdash; ' + upgradesOwned() + " / " + UPGRADES.length + '</div><div class="gridWrap">';
+  var boughtAny = false;
+  UPGRADES.forEach(function(u){
+    if(S.upgrades[u.id]){
+      boughtAny = true;
+      html += '<div class="ach got" data-upg="' + u.id + '">' + u.icon + '</div>';
+    }
+  });
+  html += '</div>';
+  if(!boughtAny) html += '<p>No upgrades bought yet.</p>';
+  openModal("Awards", html);
+}
+
+function wireModalTips(){
+  Array.prototype.forEach.call(modalBody.querySelectorAll("[data-ach]"), function(el){
+    var a = null;
+    for(var i=0;i<ACHIEVEMENTS.length;i++) if(ACHIEVEMENTS[i].id === el.dataset.ach) a = ACHIEVEMENTS[i];
+    if(!a) return;
+    var got = !!S.achievements[a.id];
+    el.addEventListener("mouseenter", function(){
+      showTip({
+        name: got ? a.name : "???",
+        kind: got ? "Award unlocked" : "Locked award",
+        price: "",
+        desc: a.desc,
+        data: got ? "" : "Not earned yet."
+      }, el);
+    });
+    el.addEventListener("mouseleave", hideTip);
+  });
+  Array.prototype.forEach.call(modalBody.querySelectorAll("[data-upg]"), function(el){
+    var u = null;
+    for(var i=0;i<UPGRADES.length;i++) if(UPGRADES[i].id === el.dataset.upg) u = UPGRADES[i];
+    if(!u) return;
+    el.addEventListener("mouseenter", function(){
+      showTip({name:u.name, kind:u.kind, price:"", desc:u.desc, data:"Owned."}, el);
+    });
+    el.addEventListener("mouseleave", hideTip);
+  });
+}
+
+function openInfo(){
+  openModal("How to play",
+    "<p>Click the pineapple to harvest chunks. Spend chunks in the store on buildings, which harvest for you automatically, forever.</p>" +
+    "<p><b>Upgrades</b> are the square icons at the top of the store. Each building unlocks a new one at 1, 5, 25, 50 and 100 owned, and each doubles that building's output. Hover any icon to see what it does.</p>" +
+    "<p><b>Awards</b> unlock as you hit milestones. Every award fills your <b>juice</b> meter a little, and <b>parrot upgrades</b> convert juice directly into extra production — so the more awards you hold, the stronger your parrots get.</p>" +
+    "<p>Every so often a <b>golden pineapple</b> drifts across the left panel. Click it fast: it either hands you a lump of chunks or sets off a frenzy that multiplies all production by seven.</p>" +
+    "<p>Your game saves itself every ten seconds and when you close the tab.</p>"
+  );
+}
+
+$("statsBtn").addEventListener("click", openStats);
+$("achBtn").addEventListener("click", openAwards);
+$("infoBtn").addEventListener("click", openInfo);
+$("modalClose").addEventListener("click", function(){ modalBack.hidden = true; hideTip(); });
+modalBack.addEventListener("click", function(e){ if(e.target === modalBack){ modalBack.hidden = true; hideTip(); } });
+document.addEventListener("keydown", function(e){ if(e.key === "Escape"){ modalBack.hidden = true; hideTip(); } });
+
+// ============================================================ save / reset
+function doSave(){ save(); toast("Game saved."); }
+$("saveBtn").addEventListener("click", doSave);
+$("saveBtn2").addEventListener("click", doSave);
+
+var resetArmed = false, resetTimer = null;
+$("resetBtn").addEventListener("click", function(){
+  if(!resetArmed){
+    resetArmed = true;
+    toast("Click Reset again within 5 seconds to wipe your empire. This cannot be undone.");
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(function(){ resetArmed = false; }, 5000);
+    return;
+  }
+  resetArmed = false;
+  clearTimeout(resetTimer);
+  try{ localStorage.removeItem("pineappleEmpireSave"); }catch(e){}
+  S.chunks = 0; S.totalEarned = 0; S.totalClicks = 0; S.handPower = 1;
+  S.upgrades = {}; S.achievements = {}; S.goldenClicked = 0; S.frenzies = 0;
+  S.startedAt = Date.now();
+  BUILDINGS.forEach(function(b){ S.owned[b.id] = 0; });
+  frenzyUntil = 0;
+  upgSignature = "";
+  invalidateMults();
+  refreshUpgradeList();
+  paint();
+  toast("Empire reset. Start again.");
+});
+
+// ============================================================ loop
+// driven by a timer, not requestAnimationFrame, so the plantation keeps
+// producing while the tab is in the background. dt comes from the clock,
+// so a throttled tick still credits the right amount.
+var last = Date.now();
+function tick(){
+  var now = Date.now();
+  var dt = (now - last) / 1000;
+  last = now;
+  if(dt > 0){
+    var cps = liveCps();
+    if(cps > 0){
+      var gain = cps * dt;
+      S.chunks += gain;
+      S.totalEarned += gain;
+    }
+  }
+  checkAchievements();
+  paint();
+  if(tipFor) paintTip();
+}
+
+// ---- offline progress ----
+(function offlineProgress(){
+  if(!S.lastSeen) return;
+  var away = Date.now() - S.lastSeen;
+  if(away < 60000) return;
+  var capped = Math.min(away, 3 * 3600 * 1000);   // at most three hours
+  var gain = baseCps() * (capped / 1000) * 0.5;   // half rate while away
+  if(gain <= 0) return;
+  S.chunks += gain;
+  S.totalEarned += gain;
+  setTimeout(function(){
+    toast("While you were away (" + fmtTime(capped) + ") your plantation made " + fmt(gain) + " chunks.");
+  }, 600);
+})();
+
+setInterval(save, 10000);
+window.addEventListener("beforeunload", save);
+
+refreshUpgradeList();
+paint();
+setInterval(tick, 50);
+})();
+</script>
+
+</body></html>
