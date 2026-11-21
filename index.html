@@ -1,5 +1,8 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<meta name="claude:viewport-fit-sides" content="cover">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pineapple Empire</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,6 +13,14 @@
    left clicker panel, middle header + plantation yard, 300px store on the right.
 */
 :root{
+  /* ============================================================
+     ALL IMAGE PATHS LIVE HERE — nowhere else in the file.
+     Change these three lines and every use updates.
+     ============================================================ */
+  --img-background: url("/pineapple-clicker/images/background.png");
+  --img-pine:       url("/pineapple-clicker/images/pine.png");
+  --img-shine:      url("/pineapple-clicker/images/pineshine.png");
+
   /* gold bevel frame, lit from the top-left */
   --gold-tl:#ece2b6;
   --gold-tr:#875526;
@@ -39,7 +50,7 @@
 html,body{height:100%;}
 body{
   margin:0;
-  background:#1a0f05 url("/images/background.png") center center / cover fixed no-repeat;
+  background:#1a0f05 var(--img-background) center center / cover fixed no-repeat;
   color:var(--text);
   font:13px Tahoma, Verdana, Arial, sans-serif;
   padding-left:max(16px, env(safe-area-inset-left,0px));
@@ -47,6 +58,8 @@ body{
   -webkit-tap-highlight-color:transparent;
   overflow:hidden;
 }
+img{max-width:100%;}
+[hidden]{display:none !important;}
 .serif{font-family:'Merriweather', Georgia, serif;}
 
 .frame{
@@ -145,14 +158,15 @@ body{
 }
 #pineShine{
   position:absolute;inset:-40%;
-  background:url("/_blob/3723d23aec801a71192b19bfe6554a07") center / contain no-repeat;
+  background:var(--img-shine) center / contain no-repeat;
   opacity:.8;pointer-events:none;mix-blend-mode:screen;
   animation:shineSpin 14s linear infinite, shinePulse 2.6s ease-in-out infinite;
 }
 @keyframes shineSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 @keyframes shinePulse{0%,100%{opacity:.55;}50%{opacity:.95;}}
 #pineImg{
-  position:relative;width:100%;height:100%;object-fit:contain;display:block;
+  position:relative;width:100%;height:100%;
+  background:var(--img-pine) center / contain no-repeat;
   filter:drop-shadow(0 6px 10px rgba(0,0,0,.6));transition:transform .07s ease;
 }
 #clickZone:active #pineImg{transform:scale(.93);}
@@ -194,11 +208,15 @@ body{
 }
 .golden .g-shine{
   position:absolute;inset:-70%;
-  background:url("/_blob/3723d23aec801a71192b19bfe6554a07") center / contain no-repeat;
+  background:var(--img-shine) center / contain no-repeat;
   mix-blend-mode:screen;pointer-events:none;
   animation:shineSpin 5s linear infinite, shinePulse 1.3s ease-in-out infinite;
 }
-.golden img{position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 10px #ffdf5c);}
+.golden .g-pine{
+  position:relative;width:100%;height:100%;
+  background:var(--img-pine) center / contain no-repeat;
+  filter:drop-shadow(0 0 10px #ffdf5c);
+}
 @keyframes drift{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
 
 /* ---- MIDDLE ---- */
@@ -330,7 +348,6 @@ body{
   position:fixed;width:252px;padding:9px 11px;z-index:120;pointer-events:none;
   box-shadow:0 6px 18px rgba(0,0,0,.6);
 }
-#tip[hidden]{display:none;}
 #tip .tipName{
   font-family:'Merriweather',Georgia,serif;font-weight:900;font-size:110%;color:#fff;
   text-shadow:0 1px 2px #000;
@@ -375,7 +392,6 @@ body{
   position:fixed;inset:0;background:rgba(0,0,0,.65);
   display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;
 }
-#modalBack[hidden]{display:none;}
 #modal{width:100%;max-width:560px;max-height:88%;display:flex;flex-direction:column;padding:0;}
 #modalHead{
   flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
@@ -443,6 +459,8 @@ body{
   #pineShine,.golden,.golden .g-shine,.float-pop,.achPop{animation:none !important;}
 }
 </style>
+</head>
+<body>
 
 <div id="shell">
   <div id="topbar">
@@ -463,7 +481,7 @@ body{
       <div id="clickWrap">
         <div id="clickZone" role="button" tabindex="0" aria-label="Harvest the pineapple">
           <div id="pineShine"></div>
-          <img id="pineImg" src="/images/pineshine.png" alt="A giant pineapple">
+          <div id="pineImg" role="img" aria-label="A giant pineapple"></div>
         </div>
       </div>
       <div id="juiceWrap">
@@ -531,8 +549,6 @@ body{
 (function(){
 "use strict";
 
-var PINE_URL = "/images/pine.png";
-
 // declared up here because the achievement list formats numbers as it is built
 var SCALE = ["million","billion","trillion","quadrillion","quintillion",
              "sextillion","septillion","octillion","nonillion","decillion"];
@@ -570,8 +586,6 @@ var BUILDINGS = [
    desc:"An ancient fruit god, roused by the scent of juice.",
    quote:"It remembers when the island was young."}
 ];
-var BY_ID = {};
-BUILDINGS.forEach(function(b){ BY_ID[b.id] = b; });
 
 // ============================================================ upgrades
 // tiered building upgrades: unlocked at N owned, each doubles that building
@@ -636,7 +650,7 @@ UPGRADES.push({id:"share_2", name:"Hands of the Harvest", icon:"🙌", cost:5000
   ["parrot_1","Parrot Helpers","🦜",9000000,0.10],
   ["parrot_2","Parrot Workers","🐦",90000000,0.125],
   ["parrot_3","Parrot Engineers","🦅",9000000000,0.15],
-  ["parrot_4","Parrot Overseers","🦶",90000000000,0.175]
+  ["parrot_4","Parrot Overseers","🪶",90000000000,0.175]
 ].forEach(function(u){
   UPGRADES.push({id:u[0], name:u[1], icon:u[2], cost:u[3], type:"parrot", rate:u[4],
     desc:"Your parrots drink the juice. Production rises by " + Math.round(u[4]*100) + "% of your juice level.",
@@ -685,7 +699,7 @@ function earnedAtLeast(n){ return function(){ return S.totalEarned >= n; }; }
   ["Continental Supply", 1e11, "🌍"],
   ["Pineapple Singularity", 1e12, "🌌"]
 ].forEach(function(a, i){
-  ach("earn"+i, a[0], "Harvest " + fmtPlain(a[1]) + " chunks in total.", a[2], earnedAtLeast(a[1]));
+  ach("earn"+i, a[0], "Harvest " + fmt(a[1]) + " chunks in total.", a[2], earnedAtLeast(a[1]));
 });
 
 [
@@ -695,7 +709,7 @@ function earnedAtLeast(n){ return function(){ return S.totalEarned >= n; }; }
   ["Carpal Tunnel Vision", 10000, "👁️"],
   ["Unstoppable Thumb", 50000, "💪"]
 ].forEach(function(a, i){
-  ach("click"+i, a[0], "Harvest by hand " + fmtPlain(a[1]) + " times.", a[2],
+  ach("click"+i, a[0], "Harvest by hand " + fmt(a[1]) + " times.", a[2],
     (function(n){ return function(){ return S.totalClicks >= n; }; })(a[1]));
 });
 
@@ -864,7 +878,6 @@ function fmt(n){
   if(tier >= SCALE.length) tier = SCALE.length - 1;
   return (n / Math.pow(1000, tier + 1)).toFixed(3) + " " + SCALE[tier];
 }
-function fmtPlain(n){ return fmt(n); }
 function fmtRate(n){
   if(n >= 1000000) return fmt(n);
   if(n >= 100) return withCommas(n);
@@ -1014,7 +1027,7 @@ function availableUpgrades(){
   return UPGRADES.filter(function(u){
     if(S.upgrades[u.id]) return false;
     if(u.type === "building" && S.owned[u.building] < (u.need || 1)) return false;
-    return S.totalEarned >= u.cost / 5;   // drip-feed, like Cookie Clicker
+    return S.totalEarned >= u.cost / 5;   // drip-feed, so far-off upgrades stay hidden
   }).sort(function(a,b){ return a.cost - b.cost; });
 }
 function upgTipFor(u){
@@ -1229,7 +1242,7 @@ var leftPanel = $("left");
 function spawnGolden(){
   var g = document.createElement("div");
   g.className = "golden";
-  g.innerHTML = '<div class="g-shine"></div><img src="' + PINE_URL + '" alt="Golden pineapple">';
+  g.innerHTML = '<div class="g-shine"></div><div class="g-pine" role="img" aria-label="Golden pineapple"></div>';
   var maxX = Math.max(10, leftPanel.clientWidth - 80);
   var maxY = Math.max(10, leftPanel.clientHeight - 80);
   g.style.left = (10 + Math.random() * maxX) + "px";
@@ -1442,4 +1455,5 @@ setInterval(tick, 50);
 })();
 </script>
 
-</body></html>
+</body>
+</html>
